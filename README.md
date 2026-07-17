@@ -1,4 +1,4 @@
-## **Proj-2 Enterprise RAG Architecture with Security Guardrails**
+## **Proj-2: Enterprise RAG Architecture w/ Security Guardrails**
 
 This project takes the clean data from Project 1 and builds a secure, highly accurate Retrieval-Augmented Generation (RAG) system.
 
