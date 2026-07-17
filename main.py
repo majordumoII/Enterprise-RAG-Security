@@ -62,9 +62,15 @@ def main():
     config = RAGConfig.from_env()
 
     if args.command == "info":
+        secret_fields = {
+            "openai_api_key",
+            "deepseek_api_key",
+            "db_password",
+            "pg_connection_string",
+        }
         print("RAG Configuration:")
         for key, val in config.__dict__.items():
-            print(f"  {key}: {val}")
+            print(f"  {key}: {'***' if key in secret_fields and val else val}")
         return
 
     if args.command == "query":

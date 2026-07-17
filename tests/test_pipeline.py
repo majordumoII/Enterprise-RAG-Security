@@ -48,12 +48,16 @@ class TestRagPipelineQuery:
         assert "doc.pdf" in messages[0]["content"]
         assert messages[1] == {"role": "user", "content": "q"}
 
-    async def test_query_with_no_chunks_notes_absence_in_context(
+    async def test_query_with_no_chunks_short_circuits_without_calling_llm(
         self, pipeline: RAGPipeline, internal_user: UserContext
     ):
+        """Fail closed: an empty retrieval result must never reach the LLM,
+        since a weak/local model may ignore "don't use outside knowledge"
+        and answer from pretrained knowledge anyway."""
         pipeline.vector_store.search.return_value = []
 
-        await pipeline.query("q", internal_user)
+        result = await pipeline.query("q", internal_user)
 
-        messages = pipeline.guardrails.generate.call_args.kwargs["messages"]
-        assert "no matching documents" in messages[0]["content"]
+        pipeline.guardrails.generate.assert_not_called()
+        assert result.sources == []
+        assert "don't have any documents" in result.answer

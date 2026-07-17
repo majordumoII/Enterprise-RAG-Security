@@ -52,6 +52,19 @@ class RAGPipeline:
     ) -> RAGResponse:
         query_embedding = self.embedder.embed(question)
         chunks = self.vector_store.search(query_embedding, user, top_k)
+
+        if not chunks:
+            # Fail closed: don't let the LLM's instruction-following be the
+            # only thing standing between "no accessible documents" and it
+            # answering from pretrained knowledge anyway.
+            logger.info(
+                "No accessible chunks for user %s; skipping LLM call", user.user_id
+            )
+            return RAGResponse(
+                answer="I don't have any documents you're permitted to access that answer this question.",
+                sources=[],
+            )
+
         context = _format_context(chunks)
 
         answer = await self.guardrails.generate(
